@@ -47,6 +47,21 @@ def crawl(url, visited, max_depth, current_depth=0):
         if link.startswith("http") and "merrimackvalleyroofing.com" in link:
             crawl(link, visited, max_depth, current_depth + 1)
 
+def remove_newlines(file_path):
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        
+        # Remove newline characters
+        content = content.replace("\n", "")
+
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write(content)
+        
+        print("Newline characters removed successfully.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
 # Main function
 def main():
     start_url = "https://www.merrimackvalleyroofing.com/"
@@ -54,5 +69,10 @@ def main():
     visited = set()
     crawl(start_url, visited, max_depth)
 
+# Path to the file
+file_path = "scraped_data.txt"
+
+# Call the function to remove newlines
 if __name__ == "__main__":
     main()
+    remove_newlines(file_path)
