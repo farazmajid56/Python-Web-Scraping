@@ -1,28 +1,58 @@
 import requests
 from bs4 import BeautifulSoup
+import re
 
-# URL of the website to scrape
-url = "https://www.merrimackvalleyroofing.com"
+# Function to extract text from a webpage
+def extract_text(url):
+    try:
+        response = requests.get(url)
+        soup = BeautifulSoup(response.content, 'html.parser')
+        # Extract text
+        text = soup.get_text()
+        return text
+    except Exception as e:
+        print(f"Error occurred while extracting text from {url}: {e}")
+        return ""
 
-# Send a GET request to the URL
-response = requests.get(url)
+# Function to get all links from a webpage and ignore image links
+def get_links(url):
+    try:
+        response = requests.get(url)
+        soup = BeautifulSoup(response.content, 'html.parser')
+        # Find all anchor tags
+        links = soup.find_all('a', href=True)
+        # Extract href attribute from anchor tags, filtering out image links
+        hrefs = [link['href'] for link in links if not re.match(r'.*\.(png|jpg)$', link['href'])]
+        return hrefs
+    except Exception as e:
+        print(f"Error occurred while getting links from {url}: {e}")
+        return []
 
-# Check if the request was successful (status code 200)
-if response.status_code == 200:
-    # Parse the HTML content
-    soup = BeautifulSoup(response.content, "html.parser")
-    
-    # Now you can perform scraping operations using BeautifulSoup
-    # For example, let's print the title of the webpage
-    print("Title of the webpage:", soup.title.text)
-    
-    # You can find specific elements using their tags, classes, ids, etc.
-    # For example, let's find all the <a> tags with class="nav-link" (navigation links)
-    nav_links = soup.find_all("a", class_="nav-link")
-    
-    # Print out the text content of each navigation link
-    print("\nNavigation Links:")
-    for link in nav_links:
-        print(link.text.strip())  # .strip() removes leading/trailing whitespaces
-else:
-    print("Failed to retrieve the webpage. Status code:", response.status_code)
+# Function to recursively crawl and extract text from all pages
+def crawl(url, visited, max_depth, current_depth=0):
+    if url in visited or current_depth >= max_depth:
+        return
+
+    visited.add(url)
+    print(f"Crawling: {url}")
+
+    text = extract_text(url)
+    if text:
+        with open("scraped_data.txt", "a", encoding="utf-8") as f:
+            f.write(text)
+            f.write("\n\n")
+
+    links = get_links(url)
+    for link in links:
+        if link.startswith("http") and "merrimackvalleyroofing.com" in link:
+            crawl(link, visited, max_depth, current_depth + 1)
+
+# Main function
+def main():
+    start_url = "https://www.merrimackvalleyroofing.com/"
+    max_depth = 3  # Maximum depth to crawl
+    visited = set()
+    crawl(start_url, visited, max_depth)
+
+if __name__ == "__main__":
+    main()
