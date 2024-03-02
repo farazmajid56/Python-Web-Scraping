@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import re
+import time
 
 # Function to extract text from a webpage
 def extract_text(url):
@@ -46,6 +47,7 @@ def crawl(url, visited, max_depth, current_depth=0):
     for link in links:
         if link.startswith("http") and "merrimackvalleyroofing.com" in link:
             crawl(link, visited, max_depth, current_depth + 1)
+        time.sleep(5)  # Add a delay of 1 second before making the next request
 
 def remove_newlines(file_path):
     try:
@@ -69,10 +71,11 @@ def main():
     visited = set()
     crawl(start_url, visited, max_depth)
 
-# Path to the file
-file_path = "scraped_data.txt"
+    # Path to the file
+    file_path = "scraped_data.txt"
 
-# Call the function to remove newlines
+    # Call the function to remove newlines
+    remove_newlines(file_path)
+
 if __name__ == "__main__":
     main()
-    remove_newlines(file_path)
